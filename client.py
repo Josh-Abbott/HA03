@@ -5,6 +5,17 @@ import os
 HOST = '127.0.0.1'
 PORT = 12345
 
+def receive_messages(client_socket):
+    while True:
+        try:
+            message = client_socket.recv(1024).decode('utf-8')
+            if not message:
+                break
+            print(f"\nReceived message: {message}")
+        except:
+            print("Connection lost.")
+            break
+
 def send_message(client_socket):
     while True:
         message = input("Enter message (/sendfile <filename> to send a file): ")
@@ -17,10 +28,6 @@ def send_message(client_socket):
                 print(f"File {filename} not found.")
         else:
             client_socket.send(message.encode())
-            received_message = client_socket.recv(1024).decode('utf-8')
-            if not received_message:
-                break
-            print(f"Received message: {received_message}")
 
 def send_file(client_socket, filename):
     print(f"Sending file: {filename}")
@@ -37,9 +44,10 @@ def start_client():
         client.connect((HOST, PORT))
         print(f"Connected to {HOST}:{PORT}")
 
-        send_thread = threading.Thread(target=send_message, args=(client,))
+        send_thread = threading.Thread(target=receive_messages, args=(client,))
         send_thread.start()
-        send_thread.join()
+        
+        send_message(client)
     
 if __name__ == "__main__":
     start_client()
