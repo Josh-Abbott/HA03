@@ -31,12 +31,14 @@ def send_message(client_socket):
 
 def send_file(client_socket, filename):
     print(f"Sending file: {filename}")
+
+    file_size = os.path.getsize(filename)
+    client_socket.send(str(file_size).encode('utf-8'))
+
     with open(filename, "rb") as f:
-        while True:
-            data = f.read(1024)
-            if not data:
-                break
+        while (data := f.read(1024)):
             client_socket.send(data)
+            
     print(f"File {filename} sent successfully.")
 
 def start_client():

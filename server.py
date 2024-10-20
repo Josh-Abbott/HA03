@@ -20,14 +20,14 @@ def handle_client(client_socket, client_address):
 
     while True:
         try:
-            message = client_socket.recv(1024)
+            message = client_socket.recv(1024).decode('utf-8')
             if not message:
                 break
-            if message.decode('utf-8').startswith("/sendfile"):
-                filename = message.decode('utf-8').split()[1]
+            if message.startswith("/sendfile"):
+                filename = message.split()[1]
                 receive_file(client_socket, filename)
             else:
-                print(f"Received message from {client_address}: {message.decode('utf-8')}")
+                print(f"Received message from {client_address}: {message}")
                 broadcast(message, client_socket)
         except:
             break     
@@ -38,12 +38,18 @@ def handle_client(client_socket, client_address):
             
 def receive_file(client_socket, filename):
     print(f"Receiving file: {filename}")
+
+    file_size = int(client_socket.recv(1024).decode('utf-8'))
+
+    received_size = 0
     with open(f"server_{filename}", "wb") as f:
-        while True:
+        while received_size < file_size:
             data = client_socket.recv(1024)
             if not data:
                 break
             f.write(data)
+            received_size += len(data)
+
     print(f"File {filename} received successfully.")
 
 def start_server():
